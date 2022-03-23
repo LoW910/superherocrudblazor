@@ -1,0 +1,64 @@
+﻿@page "/comic"
+@page "/comic/{id:int}"
+@inject ISuperHeroService SuperHeroService
+
+@if (Id == null)
+{
+    <PageTitle>Create a new Comic</PageTitle>
+    <h3>New Comic</h3>
+}
+else
+{
+    <PageTitle>Edit @comic.Name</PageTitle>
+    <h3>Edit @comic.Name</h3>
+}
+
+<EditForm Model="comic" OnSubmit="HandleSubmit">
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="comic.Name" class="form-control"></InputText>
+    </div> 
+    <button type="submit" class="btn btn-primary">@btnText</button>
+        @if (Id != null)
+    {
+        <button type="button" class="btn btn-danger" @onclick="DeleteComic">Delete Comic</button>
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    string btnText = string.Empty;
+
+    Comic comic = new Comic();
+
+    protected override async Task OnInitializedAsync()
+    {
+        btnText = Id == null ? "Save New Comic" : "Update Comic";
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            comic = await SuperHeroService.GetSingleComicWithId((int)Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            await SuperHeroService.CreateComic(comic);
+        }
+        else
+        {
+            await SuperHeroService.UpdateComic(comic);
+        }
+    }
+
+    async Task DeleteComic()
+    {
+        await SuperHeroService.DeleteComic(comic.Id);
+    }
+}
